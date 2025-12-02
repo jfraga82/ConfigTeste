@@ -10,6 +10,7 @@ const requiredEnvVars = [
   'BC_CLIENT_ID', 
   'BC_CLIENT_SECRET',
   'BC_BASE_URL',
+  'BC_ENVIRONMENT_NAME',
   'BC_COMPANY_NAME'
 ];
 
@@ -28,6 +29,7 @@ if (process.env.NODE_ENV !== 'production') {
   console.log(`BC_CLIENT_ID: ${process.env.BC_CLIENT_ID ? '✅ Loaded' : '❌ MISSING'}`);
   console.log(`BC_CLIENT_SECRET: ${process.env.BC_CLIENT_SECRET ? '✅ Loaded' : '❌ MISSING'}`);
   console.log(`BC_BASE_URL: ${process.env.BC_BASE_URL ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`BC_ENVIRONMENT_NAME: ${process.env.BC_ENVIRONMENT_NAME ? '✅ Loaded' : '❌ MISSING'}`);
   console.log(`BC_COMPANY_NAME: ${process.env.BC_COMPANY_NAME ? '✅ Loaded' : '❌ MISSING'}`);
 }
 
@@ -36,6 +38,7 @@ const bcConfig = {
   clientId: process.env.BC_CLIENT_ID,
   clientSecret: process.env.BC_CLIENT_SECRET,
   specificBaseUrl: process.env.BC_BASE_URL,
+  environmentName: process.env.BC_ENVIRONMENT_NAME,
   companyName: process.env.BC_COMPANY_NAME,
   tokenEndpoint: `https://login.microsoftonline.com/${process.env.BC_TENANT_ID}/oauth2/v2.0/token`,
   scope: process.env.BC_SCOPE || 'https://api.businesscentral.dynamics.com/.default'
