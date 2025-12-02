@@ -15,6 +15,9 @@ const { attachUserInfo, requireAuth } = require('./server/middleware/authMiddlew
 const app = express();
 const PORT = process.env.PORT || 3000; // PORT from .env or default to 3000
 
+// Trust Azure proxy for rate limiting and session management
+app.set('trust proxy', 1);
+
 // Validate session secret
 if (!process.env.SESSION_SECRET) {
   console.error('❌ SESSION_SECRET is not set in .env file!');
