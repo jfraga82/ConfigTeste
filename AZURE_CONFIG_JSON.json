@@ -1,0 +1,93 @@
+[
+  {
+    "name": "BC_BASE_URL",
+    "value": "https://api.businesscentral.dynamics.com/v2.0/c87b2897-7933-41bc-9704-9a56e906d373/TekeverTest/ODataV4",
+    "slotSetting": false
+  },
+  {
+    "name": "BC_COMPANY_NAME",
+    "value": "UAS_MASTER",
+    "slotSetting": false
+  },
+  {
+    "name": "BC_CLIENT_ID",
+    "value": "SUBSTITUIR_PELO_SEU_BC_CLIENT_ID",
+    "slotSetting": false
+  },
+  {
+    "name": "BC_CLIENT_SECRET",
+    "value": "SUBSTITUIR_PELO_SEU_BC_CLIENT_SECRET",
+    "slotSetting": false
+  },
+  {
+    "name": "BC_TENANT_ID",
+    "value": "SUBSTITUIR_PELO_SEU_TENANT_ID",
+    "slotSetting": false
+  },
+  {
+    "name": "BC_SCOPE",
+    "value": "https://api.businesscentral.dynamics.com/.default",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_CLIENT_ID",
+    "value": "SUBSTITUIR_PELO_SEU_AZURE_AD_CLIENT_ID",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_CLIENT_SECRET",
+    "value": "SUBSTITUIR_PELO_SEU_AZURE_AD_CLIENT_SECRET",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_TENANT_ID",
+    "value": "SUBSTITUIR_PELO_SEU_TENANT_ID",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_AUTHORITY",
+    "value": "https://login.microsoftonline.com/SUBSTITUIR_PELO_SEU_TENANT_ID",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_REDIRECT_URI",
+    "value": "https://testeappjf.azurewebsites.net/auth/callback",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_AD_POST_LOGOUT_REDIRECT_URI",
+    "value": "https://testeappjf.azurewebsites.net",
+    "slotSetting": false
+  },
+  {
+    "name": "SESSION_SECRET",
+    "value": "GERAR_UM_SECRET_ALEATORIO_32_CARACTERES",
+    "slotSetting": false
+  },
+  {
+    "name": "SESSION_MAX_AGE",
+    "value": "3600000",
+    "slotSetting": false
+  },
+  {
+    "name": "NODE_ENV",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "PORT",
+    "value": "8080",
+    "slotSetting": false
+  },
+  {
+    "name": "APP_URL",
+    "value": "https://testeappjf.azurewebsites.net",
+    "slotSetting": false
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "value": "https://testeappjf.azurewebsites.net",
+    "slotSetting": false
+  }
+]
+

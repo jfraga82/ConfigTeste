@@ -391,8 +391,8 @@ window.returnToQuestionnaireSelection = function() {
         .then(questionnaires => {
           availableQuestionnaires = questionnaires;
           displayQuestionnaireSelection(questionnaires);
-        })
-        .catch(error => {
+    })
+    .catch(error => {
           console.error('Error reloading questionnaires:', error);
           const container = document.getElementById("question-container");
           if (container) {
@@ -826,7 +826,7 @@ async function loadSelectedQuestionnaire(code) {
     if (container) container.innerHTML = `<p style="color: #ff4444;">Configuration loading error: ${fetchError.message}. Please try again.</p>`;
     return;
   }
-}
+  }
 
 // Initialize Questionnaire UI (after loading)
 function initializeQuestionnaireUI() {
@@ -836,7 +836,7 @@ function initializeQuestionnaireUI() {
     if (container) container.innerHTML = `<p style="color: #ff4444;">Invalid configuration data. Please contact support.</p>`;
     return;
   }
-  
+
   // Show back button when in questionnaire
   const backBtn = document.getElementById('back-to-list-btn');
   if (backBtn) {
