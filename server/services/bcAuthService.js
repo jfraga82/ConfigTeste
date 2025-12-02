@@ -1,5 +1,6 @@
 const axios = require('axios');
 const bcConfig = require('../config/bc');
+const { AppError } = require('../utils/errorHandler');
 
 let accessToken = null;
 let tokenExpiryTime = 0;
@@ -27,14 +28,24 @@ const fetchNewToken = async () => {
       accessToken = response.data.access_token;
       // Set expiry time a bit earlier than actual to be safe (e.g., 5 minutes buffer)
       tokenExpiryTime = Date.now() + (response.data.expires_in - 300) * 1000;
-      console.log('Successfully fetched new Business Central access token.');
+      console.log('✅ Successfully fetched new Business Central access token.');
       return accessToken;
     } else {
-      throw new Error('Failed to obtain access token from Business Central.');
+      throw new AppError('Failed to obtain access token from Business Central.', 500);
     }
   } catch (error) {
-    console.error('Error fetching new Business Central access token:', error.response ? error.response.data : error.message);
-    throw error;
+    console.error('❌ Error fetching Business Central access token');
+    
+    if (error.isOperational) {
+      throw error;
+    }
+    
+    if (error.response) {
+      const statusCode = error.response.status || 500;
+      throw new AppError('Authentication with Business Central failed.', statusCode);
+    }
+    
+    throw new AppError('Unable to authenticate with Business Central. Please check configuration.', 503);
   }
 };
 

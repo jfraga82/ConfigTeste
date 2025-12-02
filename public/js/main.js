@@ -12,6 +12,32 @@ let currentLanguage = 'en'; // Default language
 const defaultLanguage = 'en';
 
 /**
+ * Sanitize HTML to prevent XSS attacks
+ * Converts text to safe HTML by escaping special characters
+ */
+function sanitizeHTML(text) {
+  if (typeof text !== 'string') return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Highlight search term safely without XSS risk
+ */
+function highlightSearchTerm(text, searchTerm) {
+  if (!searchTerm || typeof text !== 'string') return sanitizeHTML(text);
+  
+  // Escape regex special characters in search term
+  const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedTerm})`, 'gi');
+  const sanitized = sanitizeHTML(text);
+  
+  // Only highlight after sanitization
+  return sanitized.replace(regex, '<mark>$1</mark>');
+}
+
+/**
  * Retrieves translated text from a multi-language object.
  */
 function getTranslatedText(textObject, lang, defaultLang = 'en') {
@@ -88,10 +114,10 @@ function renderDropdownAutocomplete(q, initialValue) {
   const inputBox = document.createElement("input");
   inputBox.type = "text";
   inputBox.placeholder = getTranslatedText({
-    pt: "Filtrar opções...", 
+    pt: "Filter options...", 
     en: "Filter options...", 
-    es: "Filtrar opciones...", 
-    zh: "[zh] Filter options..."
+    es: "Filter options...", 
+    zh: "Filter options..."
   }, currentLanguage);
   inputBox.className = "dropdown-input";
   inputBox.autocomplete = "off";
@@ -306,18 +332,18 @@ function showCreateProductDialog() {
   dialog.innerHTML = `
     <div class="dialog-box">
       <div class="dialog-header">
-        <h3 class="dialog-title">Configuração Completa</h3>
+        <h3 class="dialog-title">Configuration Complete</h3>
       </div>
       <div class="dialog-content">
-        <p class="dialog-message">Todas as perguntas foram respondidas com sucesso!</p>
-        <p class="dialog-question">Deseja criar um novo produto com esta configuração?</p>
+        <p class="dialog-message">All parameters have been successfully defined!</p>
+        <p class="dialog-question">Would you like to create a new product with this configuration?</p>
       </div>
       <div class="dialog-actions">
         <button class="dialog-btn dialog-btn-secondary" onclick="closeCreateProductDialog()">
-          Não, obrigado
+          Not now
         </button>
         <button class="dialog-btn dialog-btn-primary" onclick="createProductFromConfiguration()">
-          Sim, criar produto
+          Create Product
         </button>
       </div>
     </div>
@@ -385,7 +411,7 @@ window.createProductFromConfiguration = async function() {
     dialog.querySelector('.dialog-content').innerHTML = `
       <div class="loading-container">
         <div class="loading-spinner"></div>
-        <p class="text-white mt-4">Criando produto...</p>
+        <p class="text-white mt-4">Engineering your product...</p>
       </div>
     `;
     dialog.querySelector('.dialog-actions').style.display = 'none';
@@ -415,7 +441,11 @@ window.createProductFromConfiguration = async function() {
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.details || errorData.error || 'Failed to create product');
+      console.error('Server validation error:', errorData);
+      const errorMsg = errorData.details 
+        ? JSON.stringify(errorData.details) 
+        : errorData.error || 'Failed to create product';
+      throw new Error(errorMsg);
     }
     
     const result = await response.json();
@@ -439,13 +469,13 @@ window.createProductFromConfiguration = async function() {
           <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <p class="error-title">Erro ao criar produto</p>
+          <p class="error-title">Product Creation Error</p>
           <p class="error-message">${error.message}</p>
         </div>
       `;
       dialog.querySelector('.dialog-actions').innerHTML = `
         <button class="dialog-btn dialog-btn-primary" onclick="closeCreateProductDialog()">
-          Fechar
+          Close
         </button>
       `;
       dialog.querySelector('.dialog-actions').style.display = 'flex';
@@ -463,16 +493,16 @@ function showProductCreatedDialog(result) {
   const description = result.ItemDescription || result.Description || result.ProductDescription || 'N/A';
   
   dialog.querySelector('.dialog-header').innerHTML = `
-    <h3 class="dialog-title">✅ Produto Criado com Sucesso</h3>
+    <h3 class="dialog-title">✅ Product Successfully Created</h3>
   `;
   
   dialog.querySelector('.dialog-content').innerHTML = `
     <div class="product-result">
       <div class="product-field">
-        <label class="product-label">Número do Produto:</label>
+        <label class="product-label">Product Number:</label>
         <div class="product-value-row">
           <span class="product-value" id="product-no">${productNo}</span>
-          <button class="copy-btn" onclick="copyToClipboard('product-no', this)" title="Copiar para clipboard">
+          <button class="copy-btn" onclick="copyToClipboard('product-no', this)" title="Copy to clipboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -482,10 +512,10 @@ function showProductCreatedDialog(result) {
       </div>
       
       <div class="product-field">
-        <label class="product-label">Descrição:</label>
+        <label class="product-label">Description:</label>
         <div class="product-value-row">
           <span class="product-value" id="product-desc">${description}</span>
-          <button class="copy-btn" onclick="copyToClipboard('product-desc', this)" title="Copiar para clipboard">
+          <button class="copy-btn" onclick="copyToClipboard('product-desc', this)" title="Copy to clipboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -498,7 +528,7 @@ function showProductCreatedDialog(result) {
   
   dialog.querySelector('.dialog-actions').innerHTML = `
     <button class="dialog-btn dialog-btn-primary" onclick="returnToQuestionnaireSelection()">
-      Novo Configurador
+      New Configuration
     </button>
   `;
   dialog.querySelector('.dialog-actions').style.display = 'flex';
@@ -619,8 +649,8 @@ function displayQuestionnaireSelection(questionnaires) {
   const title = document.createElement("div");
   title.className = "mb-6 text-center";
   title.innerHTML = `
-    <h2 class="text-2xl font-bold text-white mb-2">Selecione o Configurador</h2>
-    <p class="text-sm text-gray-400">Escolha o tipo de produto que deseja configurar</p>
+    <h2 class="text-2xl font-bold text-white mb-2">Select Your Configurator</h2>
+    <p class="text-sm text-gray-400">Discover the perfect solution engineered for your needs</p>
   `;
   container.appendChild(title);
   
@@ -636,7 +666,7 @@ function displayQuestionnaireSelection(questionnaires) {
         type="text" 
         id="questionnaire-search" 
         class="search-input" 
-        placeholder="Pesquisar configurador..."
+        placeholder="Search configurator..."
         autocomplete="off"
       >
       <button id="clear-search" class="clear-search-btn" style="display: none;">×</button>
@@ -673,7 +703,7 @@ function displayQuestionnaireSelection(questionnaires) {
     
     // Update results count
     if (searchTerm) {
-      resultsCount.textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`;
+      resultsCount.textContent = `${filtered.length} ${filtered.length !== 1 ? 'solutions' : 'solution'} found`;
       resultsCount.style.display = "block";
     } else {
       resultsCount.style.display = "none";
@@ -704,8 +734,8 @@ function renderQuestionnaireCards(questionnaires, container, searchTerm = "") {
       <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
-      <p class="no-results-text">Nenhum configurador encontrado</p>
-      <p class="no-results-hint">Tente outro termo de pesquisa</p>
+      <p class="no-results-text">No configurator found</p>
+      <p class="no-results-hint">Try a different search term</p>
     `;
     container.appendChild(noResults);
     return;
@@ -719,11 +749,13 @@ function renderQuestionnaireCards(questionnaires, container, searchTerm = "") {
     let description = getTranslatedText(q.Translations || q.Description, currentLanguage, defaultLanguage);
     let code = q.Code;
     
-    // Highlight search term
+    // Sanitize and highlight search term safely
     if (searchTerm) {
-      const regex = new RegExp(`(${searchTerm})`, 'gi');
-      description = description.replace(regex, '<mark>$1</mark>');
-      code = code.replace(regex, '<mark>$1</mark>');
+      description = highlightSearchTerm(description, searchTerm);
+      code = highlightSearchTerm(code, searchTerm);
+    } else {
+      description = sanitizeHTML(description);
+      code = sanitizeHTML(code);
     }
     
     card.innerHTML = `
@@ -752,7 +784,7 @@ async function selectQuestionnaire(code) {
   container.innerHTML = `
     <div class="loading-container">
       <div class="loading-spinner"></div>
-      <p class="text-white mt-4">Carregando configurador...</p>
+      <p class="text-white mt-4">Loading your configurator...</p>
     </div>
   `;
   
@@ -791,7 +823,7 @@ async function loadSelectedQuestionnaire(code) {
   } catch (fetchError) {
     console.error("Error fetching questionnaire data:", fetchError);
     const container = document.getElementById("question-container");
-    if (container) container.innerHTML = `<p style="color: #ff4444;">Error loading configuration: ${fetchError.message}. Please try again later.</p>`;
+    if (container) container.innerHTML = `<p style="color: #ff4444;">Configuration loading error: ${fetchError.message}. Please try again.</p>`;
     return;
   }
 }
@@ -801,7 +833,7 @@ function initializeQuestionnaireUI() {
   if (!questionnaireData || !questionnaireData.Description || !questionnaireData.Questions) {
     console.error("Fetched questionnaire data is invalid or incomplete.");
     const container = document.getElementById("question-container");
-    if (container) container.innerHTML = `<p style="color: #ff4444;">Error: Loaded configuration data is invalid. Please contact support.</p>`;
+    if (container) container.innerHTML = `<p style="color: #ff4444;">Invalid configuration data. Please contact support.</p>`;
     return;
   }
   
@@ -810,7 +842,7 @@ function initializeQuestionnaireUI() {
   if (backBtn) {
     backBtn.style.display = 'flex';
     backBtn.onclick = () => {
-      if (confirm('Deseja voltar à lista de questionários? As respostas atuais serão perdidas.')) {
+      if (confirm('Return to configurator selection? Current answers will be lost.')) {
         returnToQuestionnaireSelection();
       }
     };
@@ -897,10 +929,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     
   } catch (error) {
     console.error("Error initializing configurator:", error);
-    const container = document.getElementById("question-container");
-    if (container) {
-      container.innerHTML = `<p style="color: #ff4444;">Error loading configurator: ${error.message}. Please try again later.</p>`;
-    }
+      const container = document.getElementById("question-container");
+      if (container) {
+        container.innerHTML = `<p style="color: #ff4444;">Configurator initialization error: ${error.message}. Please try again.</p>`;
+      }
     return;
   }
 
@@ -939,4 +971,33 @@ function setLanguage(langCode) {
   } else {
     console.warn(`Language code "${langCode}" is not supported. Available: ${availableLanguages.join(', ')}`);
   }
+}
+
+/**
+ * Initialize Application
+ * Checks authentication before loading configurator
+ */
+async function initializeApplication() {
+  console.log('[App] Initializing application...');
+
+  // Check authentication first
+  if (typeof initializeAuth === 'function') {
+    await initializeAuth();
+    console.log('[App] ✅ Authentication verified');
+  } else {
+    console.warn('[App] ⚠️ Auth module not loaded');
+  }
+
+  // Load questionnaire selection screen
+  console.log('[App] Loading questionnaire selection...');
+  
+  // The rest of the initialization happens in the questionnaire selection
+  // which is already implemented in the fetchAvailableQuestionnaires function
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApplication);
+} else {
+  initializeApplication();
 }

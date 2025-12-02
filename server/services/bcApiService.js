@@ -1,6 +1,7 @@
 const axios = require('axios');
 const bcConfig = require('../config/bc');
 const { getAccessToken } = require('./bcAuthService');
+const { AppError } = require('../utils/errorHandler');
 
 /**
  * Calls the ICRCFGConfInt_GetQuestionnaireJson web service in Business Central using ODataV4 path.
@@ -76,13 +77,17 @@ const getQuestionnaireJson = async (questionnaireCode) => {
       throw new Error('Empty response data from Business Central OData service.');
     }
   } catch (error) {
-    console.error('Error calling Business Central OData API ICRCFGConfInt_GetQuestionnaireJson:', 
-                  error.response ? (error.response.data || error.response.statusText) : error.message, 
-                  error.config ? `URL: ${error.config.url}` : '');
-    const errorMessage = error.response && error.response.data && error.response.data.error && error.response.data.error.message 
-                       ? error.response.data.error.message 
-                       : 'Failed to fetch questionnaire from Business Central OData service.';
-    throw new Error(errorMessage);
+    // Log error details on server only
+    console.error('Error calling BC OData API - GetQuestionnaireJson');
+    
+    if (error.response) {
+      const bcError = error.response.data?.error?.message || 'Business Central API error';
+      const statusCode = error.response.status || 500;
+      throw new AppError(bcError, statusCode);
+    }
+    
+    // Network or other errors
+    throw new AppError('Failed to fetch questionnaire. Please try again later.', 503);
   }
 };
 
@@ -142,12 +147,17 @@ const getAvailableQuestionnaires = async () => {
       throw new Error('Empty response data from Business Central OData service.');
     }
   } catch (error) {
-    console.error('Error calling Business Central OData API _GetAvailableQuestionnaires:', 
-                  error.response ? (error.response.data || error.response.statusText) : error.message);
-    const errorMessage = error.response && error.response.data && error.response.data.error && error.response.data.error.message 
-                       ? error.response.data.error.message 
-                       : 'Failed to fetch available questionnaires from Business Central OData service.';
-    throw new Error(errorMessage);
+    // Log error details on server only
+    console.error('Error calling BC OData API - GetAvailableQuestionnaires');
+    
+    if (error.response) {
+      const bcError = error.response.data?.error?.message || 'Business Central API error';
+      const statusCode = error.response.status || 500;
+      throw new AppError(bcError, statusCode);
+    }
+    
+    // Network or other errors
+    throw new AppError('Failed to fetch available questionnaires. Please try again later.', 503);
   }
 };
 
@@ -217,22 +227,121 @@ const createProduct = async (questionnaireCode, attributes) => {
       if (productData.Success === false || productData.Error) {
         const errorMsg = productData.Error || 'Unknown error from Business Central';
         console.error('Business Central returned error:', errorMsg);
-        throw new Error(errorMsg);
+        throw new AppError(errorMsg, 400);
       }
       
       console.log('Successfully created product from configuration.');
       return productData;
     } else {
-      throw new Error('Empty response data from Business Central OData service.');
+      throw new AppError('Empty response data from Business Central OData service.', 500);
     }
   } catch (error) {
-    console.error('Error calling Business Central OData API _CreateProductFromConfiguration:', 
-                  error.response ? (error.response.data || error.response.statusText) : error.message);
-    const errorMessage = error.response && error.response.data && error.response.data.error && error.response.data.error.message 
-                       ? error.response.data.error.message 
-                       : 'Failed to create product from configuration in Business Central OData service.';
-    throw new Error(errorMessage);
+    // Log error details on server only
+    console.error('Error calling BC OData API - CreateProduct');
+    
+    // If it's already an AppError, re-throw it
+    if (error.isOperational) {
+      throw error;
+    }
+    
+    if (error.response) {
+      const bcError = error.response.data?.error?.message || 'Failed to create product';
+      const statusCode = error.response.status || 500;
+      throw new AppError(bcError, statusCode);
+    }
+    
+    // Network or other errors
+    throw new AppError('Failed to create product. Please try again later.', 503);
   }
 };
 
-module.exports = { getQuestionnaireJson, getAvailableQuestionnaires, createProduct }; 
+/**
+ * Validates if an external user email is authorized to access the configurator
+ * Calls the ICRCFGConfInt_ValidateExternalUserEmail web service in Business Central
+ * @param {string} emailAddress - The email address to validate
+ * @returns {Promise<object>} Validation result from Business Central
+ * @throws {AppError} If the API call fails or email is not authorized
+ */
+const validateUserEmail = async (emailAddress) => {
+  try {
+    const accessToken = await getAccessToken();
+
+    // Construct the API URL for email validation
+    const encodedCompanyName = encodeURIComponent(bcConfig.companyName);
+    const apiUrl = `${bcConfig.specificBaseUrl}/${bcConfig.tenantId}/${bcConfig.environmentName}/ODataV4/ICRCFGConfInt_ValidateExternalUserEmail?Company='${encodedCompanyName}'`;
+
+    // Prepare input JSON as per BC specification
+    const actualParams = {
+      emailAddress: emailAddress
+    };
+    const inputJsonBody = {
+      inputJson: JSON.stringify(actualParams)
+    };
+    const requestPayloadString = JSON.stringify(inputJsonBody);
+
+    console.log(`[BC] Validating email: ${emailAddress}`);
+    console.log(`[BC] Calling API: ${apiUrl}`);
+
+    const requestHeaders = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    };
+
+    const response = await axios.post(apiUrl, requestPayloadString, {
+      headers: requestHeaders,
+      timeout: 10000 // 10 second timeout
+    });
+
+    console.log('[BC] Validation response:', response.data);
+
+    // Parse the value field (BC returns JSON as string)
+    let validationData;
+    try {
+      validationData = JSON.parse(response.data.value);
+      console.log('[BC] Parsed result:', validationData.result);
+    } catch (parseError) {
+      console.error('[BC] Failed to parse response:', parseError);
+      throw new AppError('Invalid response from Business Central', 500);
+    }
+
+    // Check if result is "ok"
+    if (validationData.result === 'ok') {
+      console.log(`[BC] ✅ Email validated: ${emailAddress}`);
+      return {
+        success: true,
+        result: validationData.result,
+        message: validationData.message || 'Email validated successfully',
+        description: validationData.description || ''
+      };
+    } else {
+      console.log(`[BC] ❌ Email not authorized: ${emailAddress}`);
+      throw new AppError('Email not authorized', 403);
+    }
+
+  } catch (error) {
+    console.error('[BC] Error validating email:', error.message);
+
+    // If it's already an AppError, rethrow it
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    // Handle axios errors
+    if (error.response) {
+      const statusCode = error.response.status;
+      const bcError = error.response.data?.error?.message || error.response.data?.message || 'Email validation failed';
+      console.error(`[BC] Validation API error (${statusCode}):`, bcError);
+      throw new AppError(bcError, statusCode);
+    }
+
+    // Network or other errors
+    throw new AppError('Failed to validate email. Please try again later.', 503);
+  }
+};
+
+module.exports = { 
+  getQuestionnaireJson, 
+  getAvailableQuestionnaires, 
+  createProduct,
+  validateUserEmail 
+}; 

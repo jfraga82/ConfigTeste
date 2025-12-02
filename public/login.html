@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Tekever Configurator</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="preload" href="/assets/Pilcrow-Regular.otf" as="font" type="font/otf" crossorigin>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <!-- Logo -->
+            <div class="logo-container">
+                <img src="/assets/logo.png" alt="Tekever" class="logo">
+            </div>
+
+            <!-- Title -->
+            <h1 class="login-title">Product Configurator</h1>
+            <p class="login-subtitle">Authentication required to access the platform</p>
+
+            <!-- Error Message -->
+            <div id="error-message" class="error-message" style="display: none;"></div>
+
+            <!-- Success Message -->
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <!-- Login Button -->
+            <button id="signInButton" class="sign-in-button">
+                <svg class="microsoft-icon" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#f25022" d="M0 0h11v11H0z"/>
+                    <path fill="#00a4ef" d="M12 0h11v11H12z"/>
+                    <path fill="#7fba00" d="M0 12h11v11H0z"/>
+                    <path fill="#ffb900" d="M12 12h11v11H12z"/>
+                </svg>
+                <span>Sign in with Microsoft</span>
+            </button>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Authenticating...</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <p>Powered by <strong>Incentea Core</strong></p>
+                <p class="security-note">🔒 Secure authentication via Microsoft Azure AD</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>
+
+
