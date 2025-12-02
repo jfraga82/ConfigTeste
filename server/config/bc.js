@@ -6,12 +6,11 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const requiredEnvVars = [
-  'TENANT_ID',
-  'CLIENT_ID', 
-  'CLIENT_SECRET',
+  'BC_TENANT_ID',
+  'BC_CLIENT_ID', 
+  'BC_CLIENT_SECRET',
   'BC_BASE_URL',
-  'BC_ENVIRONMENT_NAME',
-  'COMPANY_ID'
+  'BC_COMPANY_NAME'
 ];
 
 // Validate all required env vars are present
@@ -25,23 +24,21 @@ if (missingVars.length > 0) {
 
 // Only show status, NEVER values
 if (process.env.NODE_ENV !== 'production') {
-  console.log(`TENANT_ID: ${process.env.TENANT_ID ? '✅ Loaded' : '❌ MISSING'}`);
-  console.log(`CLIENT_ID: ${process.env.CLIENT_ID ? '✅ Loaded' : '❌ MISSING'}`);
-  console.log(`CLIENT_SECRET: ${process.env.CLIENT_SECRET ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`BC_TENANT_ID: ${process.env.BC_TENANT_ID ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`BC_CLIENT_ID: ${process.env.BC_CLIENT_ID ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`BC_CLIENT_SECRET: ${process.env.BC_CLIENT_SECRET ? '✅ Loaded' : '❌ MISSING'}`);
   console.log(`BC_BASE_URL: ${process.env.BC_BASE_URL ? '✅ Loaded' : '❌ MISSING'}`);
-  console.log(`BC_ENVIRONMENT_NAME: ${process.env.BC_ENVIRONMENT_NAME ? '✅ Loaded' : '❌ MISSING'}`);
-  console.log(`COMPANY_ID: ${process.env.COMPANY_ID ? '✅ Loaded' : '❌ MISSING'}`);
+  console.log(`BC_COMPANY_NAME: ${process.env.BC_COMPANY_NAME ? '✅ Loaded' : '❌ MISSING'}`);
 }
 
 const bcConfig = {
-  tenantId: process.env.TENANT_ID,
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
+  tenantId: process.env.BC_TENANT_ID,
+  clientId: process.env.BC_CLIENT_ID,
+  clientSecret: process.env.BC_CLIENT_SECRET,
   specificBaseUrl: process.env.BC_BASE_URL,
-  environmentName: process.env.BC_ENVIRONMENT_NAME,
-  companyName: process.env.COMPANY_ID,
-  tokenEndpoint: `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
-  scope: 'https://api.businesscentral.dynamics.com/.default'
+  companyName: process.env.BC_COMPANY_NAME,
+  tokenEndpoint: `https://login.microsoftonline.com/${process.env.BC_TENANT_ID}/oauth2/v2.0/token`,
+  scope: process.env.BC_SCOPE || 'https://api.businesscentral.dynamics.com/.default'
 };
 
 // Validate config structure
