@@ -4,8 +4,6 @@
  * and validated via Business Central
  */
 
-const { AppError } = require('../utils/errorHandler');
-
 /**
  * Middleware to check if user is authenticated
  * Verifies that session exists and contains user information
