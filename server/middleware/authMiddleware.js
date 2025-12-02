@@ -4,7 +4,7 @@
  * and validated via Business Central
  */
 
-const { ApiError } = require('../utils/errorHandler');
+const { AppError } = require('../utils/errorHandler');
 
 /**
  * Middleware to check if user is authenticated
