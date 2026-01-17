@@ -165,10 +165,11 @@ const getAvailableQuestionnaires = async () => {
  * Calls the _CreateProductFromConfiguration web service in Business Central using ODataV4 path.
  * @param {string} questionnaireCode - The code of the questionnaire.
  * @param {Array} attributes - Array of attribute objects with AttributeName and Value.
+ * @param {string} userEmail - The email of the authenticated user.
  * @returns {Promise<object>} The created product data from Business Central.
  * @throws {Error} If the API call fails or returns an error.
  */
-const createProduct = async (questionnaireCode, attributes) => {
+const createProduct = async (questionnaireCode, attributes, userEmail) => {
   try {
     const accessToken = await getAccessToken();
 
@@ -177,9 +178,10 @@ const createProduct = async (questionnaireCode, attributes) => {
     // API URL for creating product from configuration
     const apiUrl = `${bcConfig.specificBaseUrl}/${bcConfig.tenantId}/${bcConfig.environmentName}/ODataV4/ICRCFGConfInt_CreateProductFromConfiguration?Company='${encodedCompanyName}'&$lang=pt-PT`;
 
-    // Prepare input JSON
+    // Prepare input JSON with ExternalUserEmail right after QuestionnaireCode
     const inputParams = {
       QuestionnaireCode: questionnaireCode,
+      ExternalUserEmail: userEmail,
       Attributes: attributes
     };
     
